@@ -1,4 +1,4 @@
-# alt-ajan-secici
+# jev-subagent-router
 
 **Stop hand-picking which AI does the job.** A small router that sends every delegated task to the
 cheapest model that is smart enough for it, across three CLI routes, and keeps its own model list
