@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """JEV subagent router: task text -> which route/model/effort, plus a fallback chain.
 
-JEV (via /root/scripts/jev_efor.py) rates the task difficulty; that sets a minimum AA score.
+JEV (zorluk.py, OpenRouter public decision model) rates the task difficulty; that sets a minimum AA score.
 Among catalog models meeting it, routes are tried free-first (agy -> codex -> claude), and
 inside a route the lightest/cheapest adequate model wins, so big-model quota is saved for
 hard work. A route whose quota ran out is skipped until its cooldown ends.
@@ -67,11 +67,16 @@ def zincir(modeller: list, zorluk: str, kapali: set) -> list:
 
 
 def zorluk_olc(gorev: str) -> str:
+    """Local install reuses the shared JEV effort selector; otherwise the bundled zorluk.py."""
     try:
         import jev
         import jev_efor
         cevap = jev.decide({"text": gorev[:4000]}, jev_efor.SORU).get("answers")
         return jev_efor.sec(cevap, gorev, "medium")[0]
+    except ImportError:
+        sys.path.insert(0, str(DIR))
+        import zorluk
+        return zorluk.zorluk(gorev)
     except Exception:
         return "medium"  # JEV down: middle bar, routing still works
 

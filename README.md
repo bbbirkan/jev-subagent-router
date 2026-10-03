@@ -22,8 +22,11 @@ and new models land every few weeks without anyone updating the routing table.
 
 This project fixes three things:
 
-1. **Difficulty decides the bar, not habit.** A classifier (JEV) rates the task `low … max`, which maps
-   to a minimum [Artificial Analysis](https://artificialanalysis.ai) intelligence score.
+1. **Difficulty decides the bar, not habit.** [JEV](https://openrouter.ai) (`~typesafe/jev-latest`,
+   OpenRouter's public decision model) rates the task `low … max` in ~0.3 s for a tiny fraction of a
+   cent. That level maps to a minimum [Artificial Analysis](https://artificialanalysis.ai) intelligence score.
+   JEV is the backbone: it returns probabilities, and the router only raises a level when JEV is
+   confident. Risky topics (data loss, security, real money) are floored at `high`.
 2. **Free first, cheap second, smart enough always.** Routes are tried `agy → codex → claude`. Inside a
    route the winner is the cheapest model, then the lowest reasoning effort, then the smartest.
 3. **The catalog maintains itself.** A weekly job updates the CLIs (without touching their config),
@@ -56,6 +59,7 @@ flowchart LR
 
 | File | What it does |
 |---|---|
+| `zorluk.py` | The JEV call: task text → `low/medium/high/xhigh` with confidence thresholds and a risk floor. If JEV is unreachable it falls back to `medium`, so routing never stops. |
 | `katalog.py` | Builds `katalog.json`: every model and reasoning level from `agy models`, `codex debug models`, and the newest Claude Sonnet/Opus. Adds AA intelligence score and OpenRouter price (used as relative cost, since the CLIs bill quota, not dollars). **Refuses to write** if under half the models match AA or a route is missing, so a broken run never replaces a good catalog. |
 | `secici.py` | Task → fallback chain with ready-to-run commands. `--kota-bitti <route> [hours]` skips a route until its quota resets (default 5h). `--json` for scripts. |
 | `ajan_kapisi.py` | Claude Code `PreToolUse` hook on `Agent`: a subagent is **denied** unless `secici.py` ran in the last 15 minutes. Every call is logged; `--rapor` shows how many went through the router. Fails open when its log is broken. |
@@ -64,8 +68,12 @@ flowchart LR
 
 ## Setup
 
-Requirements: Python 3.10+, the `agy`, `codex` and `claude` CLIs, an Artificial Analysis API key, and
-the JEV classifier (`/root/scripts/jev.py`, `jev_efor.py`). Without JEV every task is treated as `medium`.
+Requirements: Python 3.10+ (stdlib only), the `agy`, `codex` and `claude` CLIs, and two keys:
+
+```bash
+export OPENROUTER_API_KEY=...   # JEV difficulty calls + model prices
+export AA_API_KEY=...           # Artificial Analysis scores (free tier is enough)
+```
 
 ```bash
 python3 katalog.py guncelle          # build the catalog
@@ -93,6 +101,7 @@ No network, no money:
 ```bash
 python3 katalog.py --demo
 python3 secici.py --demo
+python3 zorluk.py --demo
 python3 ajan_kapisi.py --demo
 ```
 
