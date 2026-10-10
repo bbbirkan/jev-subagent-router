@@ -1,8 +1,25 @@
-# jev-subagent-router
+<p align="center">
+  <img src="assets/statusline.png" alt="Claude Code with the two-line status line: context, model, 5-hour and weekly quota, cache hit" width="100%">
+</p>
 
-**Stop hand-picking which AI does the job.** A small router that sends every delegated task to the
-cheapest model that is smart enough for it, across three CLI routes, and keeps its own model list
-fresh every week.
+<h1 align="center">Your AI is burning its best model on "summarize this log."</h1>
+
+<p align="center"><b>jev-subagent-router</b> picks the cheapest model that is <i>smart enough</i> — in 0.3 seconds, for a fraction of a cent.</p>
+
+<p align="center">
+  🆓 free quotas first &nbsp;·&nbsp; 🧠 difficulty-graded by JEV &nbsp;·&nbsp; 📊 scored by Artificial Analysis &nbsp;·&nbsp; 🔄 catalog refreshes itself weekly
+</p>
+
+---
+
+### In 10 seconds
+
+| Without it | With it |
+|---|---|
+| Every task goes to your most expensive model | Each task gets the **minimum intelligence it needs** |
+| Free `agy` / `codex` quotas sit unused | Free routes are tried **first**, paid last |
+| New model drops, routing table goes stale | A weekly job **re-lists and re-scores every model** |
+| You find out the quota is gone mid-task | Your **5-hour and weekly quota** sit in the status line |
 
 ```
 $ python3 secici.py "find the root cause of the look-ahead bug in the engine"
@@ -12,7 +29,20 @@ zorluk high (min AA 46)
   3. claude Claude Sonnet 5.5 (high)     AA  46.8  ->  Agent(model="sonnet")  # effort high
 ```
 
-Try #1. If its quota is gone, mark it and fall through to #2, then #3.
+Try #1. Quota gone? Mark it and fall through to #2, then #3.
+
+### Built on
+
+| | What it does here |
+|---|---|
+| **[JEV](https://openrouter.ai)** (OpenRouter) | Reads the task, rates difficulty `low … max` with probabilities |
+| **[Artificial Analysis](https://artificialanalysis.ai)** | Intelligence score for every model × reasoning effort |
+| **[OpenRouter](https://openrouter.ai)** | Per-token price, used as relative cost |
+| **Antigravity `agy`** | Route 1, free quota (Gemini, Claude) |
+| **OpenAI `codex`** | Route 2, subscription quota (GPT-6 family) |
+| **Claude Code** | Route 3 (subagents), plus the gate hook and the status line |
+
+---
 
 ## Why
 
@@ -61,7 +91,7 @@ flowchart LR
 |---|---|
 | `zorluk.py` | The JEV call: task text → `low/medium/high/xhigh` with confidence thresholds and a risk floor. If JEV is unreachable it falls back to `medium`, so routing never stops. |
 | `katalog.py` | Builds `katalog.json`: every model and reasoning level from `agy models`, `codex debug models`, and the newest Claude Sonnet/Opus. Adds AA intelligence score and OpenRouter price (used as relative cost, since the CLIs bill quota, not dollars). **Refuses to write** if under half the models match AA or a route is missing, so a broken run never replaces a good catalog. |
-| `secici.py` | Task → fallback chain with ready-to-run commands. `--kota-bitti <route> [hours]` skips a route until its quota resets (default 5h). `--json` for scripts. |
+| `secici.py` | Task → fallback chain with ready-to-run commands. `--kota-bitti` / `--quota-out <route> [hours]` skips a route until its quota resets (default 5h). `--json` for scripts. |
 | `ajan_kapisi.py` | Claude Code `PreToolUse` hook on `Agent`: a subagent is **denied** unless `secici.py` ran in the last 15 minutes. Every call is logged; `--rapor` shows how many went through the router. Fails open when its log is broken. |
 | `cli_guncelle.sh` | Runs each CLI's own `update`. Backs up the config files first and **restores any config the update changed**. Logs a broken binary loudly. |
 | `haftalik.sh` | Weekly pipeline: CLI update → catalog → commit and push `katalog.json`. |
@@ -74,6 +104,14 @@ Requirements: Python 3.10+ (stdlib only), the `agy`, `codex` and `claude` CLIs, 
 export OPENROUTER_API_KEY=...   # JEV difficulty calls + model prices
 export AA_API_KEY=...           # Artificial Analysis scores (free tier is enough)
 ```
+
+Optional environment:
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `JEV_LOG_DIR` | `~/.jev-router/logs` | selection, gate and weekly logs |
+| `KEY_FILE` | `~/.env` | file `haftalik.sh` reads `AA_API_KEY` from |
+| `JEV_EXTRA_PATH` | — | dir with your own `jev` / `jev_efor` modules (otherwise the bundled `zorluk.py` is used) |
 
 ```bash
 python3 katalog.py guncelle          # build the catalog
@@ -96,7 +134,7 @@ Gate hook in `~/.claude/settings.json`:
 
 ## Status line (optional)
 
-`statusline/statusline.sh` is a two-line Claude Code status line:
+`statusline/statusline.sh` is a two-line Claude Code status line (screenshot at the top is a live session):
 
 ```
 ● 114k │ Opus 5.5 | medium
@@ -131,4 +169,5 @@ python3 ajan_kapisi.py --demo
 - The CLI updater restores config but cannot roll back a broken binary.
 - Price is per token. Higher effort levels think longer, so true cost per task is only known by
   measuring.
-- Paths are set up for the author's server (`/root/...`). Adjust the constants at the top of each file.
+- File and flag names are partly Turkish (`secici` = selector, `zorluk` = difficulty, `katalog` = catalog, `ajan_kapisi` = agent gate, `--kota-bitti` = `--quota-out`).
+- No published savings number yet: measure your own with `python3 ajan_kapisi.py --rapor` (Agent calls vs. how many went through the router, and which route came first).

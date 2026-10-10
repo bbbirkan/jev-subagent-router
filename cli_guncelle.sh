@@ -4,8 +4,8 @@
 # config changed or the binary is broken, restore the config (binary rollback is not possible:
 # log it loudly so a human sees it).
 set -u
-LOG=/root/logs/alt_ajan_cli_guncelle.log
-YEDEK=/root/2026-alt-ajan-secici/_yedek/$(date +%Y%m%d)
+LOG=${JEV_LOG_DIR:-$HOME/.jev-router/logs}/alt_ajan_cli_guncelle.log
+YEDEK=$(cd "$(dirname "$0")" && pwd)/_yedek/$(date +%Y%m%d)
 mkdir -p "$YEDEK" "$(dirname "$LOG")"
 say() { echo "$(date '+%F %T') $*" | tee -a "$LOG"; }
 
@@ -23,6 +23,6 @@ guncelle() {  # name, update-cmd, version-cmd, config files...
   say "$ad: $once -> $sonra"
 }
 
-guncelle claude "claude update" "claude --version" /root/.claude/settings.json
-guncelle codex "codex update" "codex --version" /root/.codex/config.toml
-guncelle agy "agy update" "agy --version" /root/.gemini/GEMINI.md /root/.gemini/antigravity-cli/AGENTS.md
+guncelle claude "claude update" "claude --version" "$HOME/.claude/settings.json"
+guncelle codex "codex update" "codex --version" "$HOME/.codex/config.toml"
+guncelle agy "agy update" "agy --version" "$HOME/.gemini/GEMINI.md" "$HOME/.gemini/antigravity-cli/AGENTS.md"

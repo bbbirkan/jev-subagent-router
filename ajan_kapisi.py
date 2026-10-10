@@ -6,12 +6,14 @@ Every Agent call is logged (allowed or not) so usage can be counted:
 A broken log never blocks work (fail-open), but the error is logged.
 """
 import json
+import os
 import sys
 import time
 from pathlib import Path
 
-SECIM_LOG = Path("/root/logs/alt_ajan_secim.jsonl")
-KAPI_LOG = Path("/root/logs/alt_ajan_kapi.jsonl")
+LOG_DIR = Path(os.environ.get("JEV_LOG_DIR", Path.home() / ".jev-router" / "logs"))
+SECIM_LOG = LOG_DIR / "alt_ajan_secim.jsonl"
+KAPI_LOG = LOG_DIR / "alt_ajan_kapi.jsonl"
 PENCERE = 15 * 60
 MUAF = {"fork", "claude-code-guide", "statusline-setup"}  # context forks / harness helpers, not delegated work
 
@@ -29,8 +31,8 @@ def karar(girdi: dict, simdi: float, son: float) -> tuple:
         return True, f"muaf ({tip})"
     if simdi - son <= PENCERE:
         return True, "secici yakin zamanda calisti"
-    return False, ("Önce JEV seçicisini çalıştır: python3 /root/2026-alt-ajan-secici/secici.py \"<görev>\" — "
-                   "1. sıra agy/codex ise işi orada yap; claude çıkarsa Agent'ı verdiği model ile tekrar çağır.")
+    return False, (f"Run the JEV router first: python3 {Path(__file__).parent / 'secici.py'} \"<task>\" — "
+                   "if #1 is agy/codex, do the work there; if it is claude, call Agent again with the model it gave.")
 
 
 def main():

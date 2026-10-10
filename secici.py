@@ -8,19 +8,21 @@ hard work. A route whose quota ran out is skipped until its cooldown ends.
 
   python3 secici.py "summarize these three logs"     # chain, best first
   python3 secici.py --json "task"
-  python3 secici.py --kota-bitti codex [hours]        # mark quota exhausted (default 5h)
+  python3 secici.py --kota-bitti codex [hours]        # mark quota exhausted (default 5h); alias --quota-out
   python3 secici.py --demo
 """
 import json
+import os
 import sys
 import time
 from pathlib import Path
 
-sys.path.insert(0, "/root/scripts")
+if os.environ.get("JEV_EXTRA_PATH"):  # optional dir with your own jev/jev_efor modules
+    sys.path.insert(0, os.environ["JEV_EXTRA_PATH"])
 DIR = Path(__file__).parent
 KATALOG = DIR / "katalog.json"
 KOTA = DIR / "kota.json"
-SECIM_LOG = Path("/root/logs/alt_ajan_secim.jsonl")
+SECIM_LOG = Path(os.environ.get("JEV_LOG_DIR", Path.home() / ".jev-router" / "logs")) / "alt_ajan_secim.jsonl"
 ROTA_SIRA = {"agy": 0, "codex": 1, "claude": 2}
 SEVIYE = ("low", "medium", "high", "xhigh", "max")
 MIN_AA = {"low": 30, "medium": 38, "high": 46, "xhigh": 51, "max": 55}
@@ -83,7 +85,7 @@ def zorluk_olc(gorev: str) -> str:
 
 def main():
     a = sys.argv[1:]
-    if a and a[0] == "--kota-bitti":
+    if a and a[0] in ("--kota-bitti", "--quota-out"):
         d = {}
         try:
             d = json.loads(KOTA.read_text())

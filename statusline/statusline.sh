@@ -4,6 +4,7 @@
 #   2) account name (before @) | 5-hour quota | weekly quota (+ reset time) | prompt-cache hit rate
 # Quotas come from the `rate_limits` field Claude Code sends to status line commands;
 # a window that is not reported shows "—".
+# Optional: STATUSLINE_USER=name overrides the account name (e.g. for screenshots).
 # Optional: JEV_EFFORT_FILE=path/to/json with {"efor": "..."} to show the JEV effort level.
 IN=$(cat)
 printf '%s' "$IN" | JEV_EFFORT_FILE="${JEV_EFFORT_FILE:-}" python3 -c "
@@ -25,7 +26,8 @@ else: c=D[-1][1]
 line1=f'\033[38;2;{c[0]};{c[1]};{c[2]}m● {k}k\033[0m │ '+d.get('model',{}).get('display_name','?')
 try: line1+=' | '+json.load(open(os.environ['JEV_EFFORT_FILE']))['efor']
 except Exception: pass
-try: name=json.load(open(os.path.expanduser('~/.claude.json')))['oauthAccount']['emailAddress'].split('@')[0]
+name=os.environ.get('STATUSLINE_USER')
+try: name=name or json.load(open(os.path.expanduser('~/.claude.json')))['oauthAccount']['emailAddress'].split('@')[0]
 except Exception: name='?'
 def q(key,label):
     x=r.get(key)
