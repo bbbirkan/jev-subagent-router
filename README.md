@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/statusline.png" alt="Claude Code with the two-line status line: context, model, 5-hour and weekly quota, cache hit" width="100%">
+  <img src="assets/hero.jpg" alt="A task goes through JEV and is routed to agy (free), codex (quota) or claude (paid)" width="100%">
 </p>
 
 <h1 align="center">Your AI is burning its best model on "summarize this log."</h1>
@@ -30,6 +30,9 @@ zorluk high (min AA 46)
 ```
 
 Try #1. Quota gone? Mark it and fall through to #2, then #3.
+
+<p align="center"><img src="assets/statusline.png" alt="Live Claude Code session with the two-line status line: context, model, 5-hour and weekly quota, cache hit" width="100%"></p>
+<p align="center"><sub>Live session: quota and cache in the status line, so you never hit the wall by surprise.</sub></p>
 
 ### Built on
 
@@ -63,6 +66,8 @@ This project fixes three things:
    re-lists every model + reasoning level they offer, and re-scores them.
 
 ## How it works
+
+<p align="center"><img src="assets/flow.jpg" alt="Task, JEV rates difficulty, minimum AA score, fallback chain agy codex claude; weekly catalog refresh" width="100%"></p>
 
 ```mermaid
 flowchart LR
@@ -134,7 +139,7 @@ Gate hook in `~/.claude/settings.json`:
 
 ## Status line (optional)
 
-`statusline/statusline.sh` is a two-line Claude Code status line (screenshot at the top is a live session):
+`statusline/statusline.sh` is a two-line Claude Code status line (screenshot above is a live session):
 
 ```
 ● 114k │ Opus 5.5 | medium
