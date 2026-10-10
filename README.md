@@ -94,6 +94,25 @@ Gate hook in `~/.claude/settings.json`:
   "hooks": [{"type": "command", "command": "python3 /path/to/ajan_kapisi.py", "timeout": 10}]}]}}
 ```
 
+## Status line (optional)
+
+`statusline/statusline.sh` is a two-line Claude Code status line:
+
+```
+● 114k │ Opus 5.5 | medium
+👤 yourname │ 5h 12% (16:00) │ week 50% (Mon 16:00) │ cache 99%
+```
+
+- context size badge, colored green → yellow → red → purple as the session grows
+- model + JEV effort level (set `JEV_EFFORT_FILE` to a JSON file with `{"efor": "..."}`)
+- account name (part before `@`), 5-hour and weekly quota used with reset time, prompt-cache hit rate
+
+Quotas come from the `rate_limits` field Claude Code passes to status line commands; a window it does not report shows `—`.
+
+```json
+"statusLine": { "type": "command", "command": "bash /path/to/statusline/statusline.sh", "refreshInterval": 2 }
+```
+
 ## Tests
 
 No network, no money:
